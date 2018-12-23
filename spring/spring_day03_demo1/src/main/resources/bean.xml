@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <context:component-scan base-package="com.itheima"/>
+
+    <context:property-placeholder location="classpath:db.properties"/>
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.pwd}"/>
+    </bean>
+    <bean id="runner" class="org.apache.commons.dbutils.QueryRunner">
+        <constructor-arg name="ds" ref="dataSource"/>
+    </bean>
+
+    <bean id="accountDao" class="com.itheima.dao.impl.AccountDaoImpl">
+        <property name="runner" ref="runner"/>
+        <property name="connectionUtils" ref="connectionUtils"/>
+    </bean>
+
+    <bean id="accountService" class="com.itheima.serviece.impl.AccountServiceImpl">
+        <property name="accountDao" ref="accountDao"/>
+
+    </bean>
+    <bean id="account" class="com.itheima.domain.Account"></bean>
+
+    <bean id="connectionUtils" class="com.itheima.utils.ConnectionUtils">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="tx" class="com.itheima.utils.TanscationManager">
+        <property name="cUtils" ref="connectionUtils"/>
+    </bean>
+
+    <aop:config>
+        <aop:pointcut id="pointId" expression="execution(* com.itheima.serviece.impl.*.*(..))"/>
+        <aop:aspect ref="tx">
+            <aop:before method="begin" pointcut-ref="pointId"/>
+            <aop:after-returning method="commit" pointcut-ref="pointId"/>
+            <aop:after-throwing method="rollback" pointcut-ref="pointId"/>
+            <aop:after method="close" pointcut-ref="pointId"/>
+        </aop:aspect>
+    </aop:config>
+
+</beans>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.itcast.mapper.UserMapper">
+    <select id="findCount" resultType="int">
+        SELECT count(1) from USER
+    </select>
+
+    <select id="findAll" parameterType="pageBean" resultType="user">
+
+        select * FROM user
+        <where>
+            <if test="user.username!=null">
+                username LIKE "%${user.username}%"
+            </if>
+        </where>
+
+        limit #{startNum},#{count}
+    </select>
+
+    <select id="findLogin" resultType="user" parameterType="user">
+        SELECT * FROM user where username=#{username} and password=#{password}
+
+    </select>
+
+    <select id="updateUser" parameterType="user">
+        UPDATE user set sex=#{sex}, age=#{age},address=#{address},qq=#{qq},email=#{email} where id=#{id}
+
+    </select>
+
+    <select id="findUserById" parameterType="int" resultType="user">
+        SELECT * from user where id=#{id}
+    </select>
+
+    <select id="saveUser" resultType="user">
+        INSERT INTO user VALUES (#{id},#{name},#{sex},#{age},#{address},#{qq},#{email})
+    </select>
+
+    <select id="deleteUser" parameterType="Integer">
+        DELETE from user where id=#{id}
+    </select>
+
+    <select id="findAll" parameterType="pageBean" resultType="user">
+        <!--
+            limit: pageNum  count
+            第一个参数：(当前页的页码-1)*每页显示条目
+            第二个参数：每页显示条目
+        -->
+        SELECT * FROM  user
+        <where>
+            <if test="user!=null">
+                <if test="user.username!=null">
+                    username like '%${user.username}%'
+                </if>
+                <if test="user.address!=null">
+                    or address LIKE '%${user.address}%'
+                </if>
+                <if test="user.email!=null">
+                    or email like '%${user.email}%'
+                </if>
+            </if>
+        </where>
+        limit #{startNum},#{count}
+    </select>
+
+</mapper>
